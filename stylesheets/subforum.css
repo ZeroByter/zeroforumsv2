@@ -1,0 +1,39 @@
+.thread{
+    display: block;
+    width: 100%;
+    padding: 16px;
+    overflow: hidden;
+}
+#main_threads_div > .row:first-of-type > div > .thread{
+    border-top: #b7b7b7 1px solid;
+}
+#main_threads_div > .row:not(:first-of-type) > div > .thread{
+    border-top: #b7b7b7 1px solid;
+    border-bottom: #b7b7b7 1px solid;
+}
+.thread:hover{
+    background: rgba(0,0,0,0.10);
+}
+.sticky-thread{
+    background: rgba(0,0,0,0.10);
+}
+.sticky-thread:hover{
+    background: rgba(0,0,0,0.084);
+}
+
+.threadDate{
+    color: black;
+    float: right;
+    text-align: right;
+    width: 240px;
+}
+.threadAuthor{
+    float: right;
+    text-align: right;
+    width: 200px;
+}
+.threadReplies{
+    color: black;
+    float: right;
+    text-align: right;
+}

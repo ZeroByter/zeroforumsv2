@@ -1,0 +1,77 @@
+#main_navbar{
+    margin-bottom: 80px;
+}
+
+.subforum_main_div{
+    margin-top: 30px;
+}
+.subforum_div{
+    display: -webkit-inline-box;
+    padding: 12px;
+    border: #929292 1px solid;
+    box-shadow: black 0px 0px 0px 1px;
+    min-height: 80px;
+    max-height: 140px;
+    width: 100%;
+    color: black;
+    transition: background 300ms;
+    margin: 6px 0px;
+}
+.subforum_div:hover, .subforum_div:focus{
+    text-decoration: none;
+    color: black;
+    background: #e0e0e0;
+}
+.subforum_image{
+    width: 64px;
+    height: 64px;
+    margin: 0px 10px;
+    text-align: left;
+}
+.subforum_image[src=""]{
+    visibility: hidden;
+}
+
+/* old forum design, make new one!
+.forum_main_div{
+    margin-bottom: 50px;
+}
+.forum_title_div{
+    background: #c9ceff;
+    padding: 10px;
+    border-radius: 2px;
+    box-shadow: inset 0px 0px 20px -5px black;
+}
+.forum_body_div{
+    background: #c9ceff;
+    padding: 8px 0px;
+    margin-top: 10px;
+    border-radius: 2px;
+    box-shadow: inset 0px 0px 20px -8px black;
+}
+.subforum_div > td{
+    padding-top: 0;
+}
+.subforum_div{
+    margin-top: -1px;
+    padding: 10px;
+    transition: background 100ms;
+}
+.subforum_div > table{
+    width: 100%;
+}
+.subforum_div:hover{
+    background: #a1a9f3;
+}
+.subforum_inactive{
+    color: grey;
+}
+.subforum_name{
+    float: left;
+}
+.subforum_activity{
+    float: right;
+    margin-top: auto;
+    margin-right: 15%;
+    text-align: right;
+}*/

@@ -1,0 +1,15 @@
+.threadBody{
+    border-radius: 2px;
+    border: #b7b7b7 1px solid;
+    overflow: auto;
+}
+.threadBodyInfo{
+    float: left;
+    min-width: 180px;
+    padding: 16px;
+}
+.threadBodyText{
+    float: left;
+    border-left: #b7b7b7 1px solid;
+    padding: 10px;
+}
