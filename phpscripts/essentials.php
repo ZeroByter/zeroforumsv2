@@ -14,7 +14,7 @@
     		$settings = include($_SERVER['DOCUMENT_ROOT'] . "/config.php");
     		$cookie_id = $settings["cookie_id"];
     		session_name("zeroforumsv2_$cookie_id");
-            session_set_cookie_params(1209600);
+            //session_set_cookie_params(1209600);
             session_start();
     	}
         return $cookie_id;
@@ -28,6 +28,41 @@
         }else{
             return false;
         }
+    }
+
+    function get_human_time($time){
+        $time = time() - $time;
+        $time = ($time<1)? 1 : $time;
+        $tokens = array (
+            31536000 => 'year',
+            2592000 => 'month',
+            604800 => 'week',
+            86400 => 'day',
+            3600 => 'hour',
+            60 => 'minute',
+            1 => 'second'
+        );
+
+        foreach ($tokens as $unit => $text) {
+            if ($time < $unit) continue;
+            $numberOfUnits = floor($time / $unit);
+            return $numberOfUnits.' '.$text.(($numberOfUnits>1)?'s':'');
+        }
+    }
+
+    function timestamp_to_date($timestamp, $withtime=false){
+        if($withtime){
+            return getdate($timestamp)["mday"] . "/" . getdate($timestamp)["mon"] . "/" . getdate($timestamp)["year"] . " " . getdate($timestamp)["hours"] . ":" . getdate($timestamp)["minutes"] . ":" . getdate($timestamp)["seconds"];
+        }else{
+            return getdate($timestamp)["mday"] . "/" . getdate($timestamp)["mon"] . "/" . getdate($timestamp)["year"];
+        }
+    }
+
+    function removeHTMLElement($identifier){
+        echo "<script id='remove_script'>
+            $('$identifier').remove()
+            $('#remove_script').remove()
+        </script>";
     }
 
     function redirectWindow($link){

@@ -4,11 +4,10 @@
     padding: 16px;
     overflow: hidden;
 }
-#main_threads_div > .row:first-of-type > div > .thread{
+#main_threads_div > .row{
     border-top: #b7b7b7 1px solid;
 }
-#main_threads_div > .row:not(:first-of-type) > div > .thread{
-    border-top: #b7b7b7 1px solid;
+#main_threads_div > .row:last-of-type{
     border-bottom: #b7b7b7 1px solid;
 }
 .thread:hover{

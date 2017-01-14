@@ -1,6 +1,3 @@
-<?php
-    include($_SERVER['DOCUMENT_ROOT'] . "/phpscripts/fillin/navbar.php");
-?>
 <link rel="stylesheet" type="text/css" href="/stylesheets/forums.css"></link>
 
 <table id="main_body_table">

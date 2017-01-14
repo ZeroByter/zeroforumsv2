@@ -13,48 +13,50 @@ function addBBTag(tagName, properties="", text=""){ //add a bbtag to the textare
 	$("#textarea").focus()
 }
 
-$("#bold").click(function(){ //when user clicks on bold
-	addBBTag("b")
-})
-$("#italic").click(function(){ //when user clicks on italic
-	addBBTag("i")
-})
-$("#underline").click(function(){ //when user clicks on italic
-	addBBTag("u")
-})
-$("#strikethrough").click(function(){ //when user clicks on italic
-	addBBTag("s")
-})
-$("#alignleft").click(function(){
-    addBBTag("align", "=left")
-})
-$("#aligncenter").click(function(){
-    addBBTag("center")
-})
-$("#alignright").click(function(){
-    addBBTag("align", "=right")
-})
-$("#listpoints").click(function(){
-    addBBTag("list", "=points", "\n[*] List item\n")
-})
-$("#listnumbers").click(function(){
-    addBBTag("list", "=numbers", "\n[*] List item\n")
-})
-$("#link").click(function(){
-    addBBTag("link", ' href=')
-})
-$("#youtube").click(function(){
-	refreshStringSelection()
-	if(stringSelected == ""){
-		addBBTag("youtube")
-	}else{
-		if(stringSelected.split("?v=").length == 2){
-			$("#textarea").val($("#textarea").val().replace(stringSelected, ""))
-			addBBTag("youtube", "", stringSelected.split("?v=")[1])
-		}else{
+$("body").ready(function(){
+	$("#bold").click(function(){ //when user clicks on bold
+		addBBTag("b")
+	})
+	$("#italic").click(function(){ //when user clicks on italic
+		addBBTag("i")
+	})
+	$("#underline").click(function(){ //when user clicks on italic
+		addBBTag("u")
+	})
+	$("#strikethrough").click(function(){ //when user clicks on italic
+		addBBTag("s")
+	})
+	$("#alignleft").click(function(){
+	    addBBTag("align", "=left")
+	})
+	$("#aligncenter").click(function(){
+	    addBBTag("center")
+	})
+	$("#alignright").click(function(){
+	    addBBTag("align", "=right")
+	})
+	$("#listpoints").click(function(){
+	    addBBTag("list", "=points", "\n[*] List item\n")
+	})
+	$("#listnumbers").click(function(){
+	    addBBTag("list", "=numbers", "\n[*] List item\n")
+	})
+	$("#link").click(function(){
+	    addBBTag("link", ' href=')
+	})
+	$("#youtube").click(function(){
+		refreshStringSelection()
+		if(stringSelected == ""){
 			addBBTag("youtube")
+		}else{
+			if(stringSelected.split("?v=").length == 2){
+				$("#textarea").val($("#textarea").val().replace(stringSelected, ""))
+				addBBTag("youtube", "", stringSelected.split("?v=")[1])
+			}else{
+				addBBTag("youtube")
+			}
 		}
-	}
+	})
 })
 
 function remove_bbcode(text){ //prevent xss and fix bbcode tags
@@ -140,27 +142,30 @@ function filter_bbcode(text){ //prevent xss and fix bbcode tags
 	return text
 }
 
-$("#preview").click(function(){
-	$("#textarea").parent().css("display", "none")
-	$("#texteditor_toolbar").parent().css("display", "none")
-	$("#textarea_preview_div").css("display", "block")
-})
-$("#editor").click(function(){
-	$("#textarea").parent().css("display", "block")
-	$("#texteditor_toolbar").parent().css("display", "block")
-	$("#textarea_preview_div").css("display", "none")
-})
-$("#textarea").bind("keyup focus", function(){ //when textarea gets a keyup or focus
-	text = $(this).val()
-	text = filter_bbcode(text)
+$("body").ready(function(){
+	$("#preview").click(function(){
+		$("#textarea").parent().css("display", "none")
+		$("#texteditor_toolbar").parent().css("display", "none")
+		$("#textarea_preview_div").css("display", "block")
+	})
+	$("#editor").click(function(){
+		$("#textarea").parent().css("display", "block")
+		$("#texteditor_toolbar").parent().css("display", "block")
+		$("#textarea_preview_div").css("display", "none")
+	})
+	$("#textarea").bind("keyup focus", function(){ //when textarea gets a keyup or focus
+		text = $(this).val()
+		text = filter_bbcode(text)
 
-	$("#preview_text").html(text)
+		$("#preview_text").html(text)
+	})
 })
 
 function setEditorString(string){
 	string = string.replace(/\\n/ig, "<br>")
 	$("#textarea").val(string)
 	$("#textarea").focus()
+	$("#preview_text").html(filter_bbcode(string))
 }
 function getEditorString(){
 	var text = $("#textarea").val()

@@ -67,7 +67,7 @@
 
         $.post("/phpscripts/requests/generatefirsttime.php", inputArray, function(html){
             console.log(html)
-            //window.location = "/"
+            window.location = "/"
         })
         return false
     })

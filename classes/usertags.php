@@ -29,7 +29,22 @@
             return mysqli_fetch_object($result);
         }
 
-        public function get_all_usertags(){
+        public function set_default($id){
+            $conn = get_mysql_conn();
+            $id = mysqli_real_escape_string($conn, $id);
+            $result = mysqli_query($conn, "UPDATE usertags SET isdefault=0");
+            $result = mysqli_query($conn, "UPDATE usertags SET isdefault=1 WHERE id='$id'");
+            mysqli_close($conn);
+        }
+
+        public function toggle_staff($id){
+            $conn = get_mysql_conn();
+            $id = mysqli_real_escape_string($conn, $id);
+            $result = mysqli_query($conn, "UPDATE usertags SET isstaff=!isstaff WHERE id='$id'");
+            mysqli_close($conn);
+        }
+
+        public function get_all(){
             $conn = get_mysql_conn();
             $result = mysqli_query($conn, "SELECT * FROM usertags ORDER BY listorder ASC");
             mysqli_close($conn);
@@ -39,11 +54,24 @@
             return $array;
         }
 
-        function get_all_usertags_limited(){
-            $currentlistorder = self::get_usertag_by_id(accounts::get_current_usertag())->listorder;
-            if(self::tag_has_permission(accounts::get_current_usertag(), "adminpnl_ignore_usertag_limit")){
-                return self::get_all_usertags();
+		public function get_highest_listorder($usertags){
+			$listorder = -1;
+			foreach($usertags as $value){
+				$usertag = self::get_by_id($value);
+				if($usertag->listorder >= $listorder){
+					$listorder = $usertag->listorder;
+				}
+			}
+			return $listorder;
+		}
+
+        public function get_all_limited(){
+			$currentlistorder = self::get_highest_listorder(accounts::get_current_usertags());
+
+            if(self::user_has_permission(accounts::get_current_usertags(), "ignoreusertagslistorder")){
+                return self::get_all();
             }
+
             $conn = get_mysql_conn();
             $result = mysqli_query($conn, "SELECT * FROM usertags WHERE listorder<='$currentlistorder' ORDER BY listorder ASC");
             mysqli_close($conn);
@@ -54,7 +82,7 @@
 
         public function get_all_staff_usertags($sort = "ASC"){
             $conn = get_mysql_conn();
-            $id = mysqli_real_escape_string($conn, $sort);
+            $sort = mysqli_real_escape_string($conn, $sort);
             $result = mysqli_query($conn, "SELECT * FROM usertags WHERE isstaff = 1 ORDER BY listorder $sort");
             mysqli_close($conn);
             $array = array();
@@ -65,53 +93,84 @@
         public function add_usertag($name, $permissions, $listorder, $isdefault=false, $isstaff=false){
             $conn = get_mysql_conn();
             $name = mysqli_real_escape_string($conn, $name);
+            $permissions = json_encode($permissions);
             $permissions = mysqli_real_escape_string($conn, $permissions);
             $listorder = mysqli_real_escape_string($conn, $listorder);
             $isdefault = mysqli_real_escape_string($conn, $isdefault);
             $isstaff = mysqli_real_escape_string($conn, $isstaff);
             $result = mysqli_query($conn, "INSERT INTO usertags(name, permissions, listorder, isdefault, isstaff) VALUES ('$name', '$permissions', '$listorder', '$isdefault', '$isstaff')");
+			$createdID = mysqli_insert_id($conn);
             mysqli_close($conn);
+			return $createdID;
         }
 
-        public function edit_usertag($id, $name, $listorder, $isstaff){
+        public function delete_usertag($id){
+            $conn = get_mysql_conn();
+            $id = mysqli_real_escape_string($conn, $id);
+            $result = mysqli_query($conn, "DELETE FROM usertags WHERE id='$id'");
+            mysqli_close($conn);
+
+            foreach(accounts::get_all() as $value){
+                accounts::take_usertag($value->id, $id);
+            }
+        }
+
+        public function edit_usertag($id, $name, $listorder){
             $conn = get_mysql_conn();
             $id = mysqli_real_escape_string($conn, $id);
             $name = mysqli_real_escape_string($conn, $name);
             $listorder = mysqli_real_escape_string($conn, $listorder);
-            $isstaff = mysqli_real_escape_string($conn, $isstaff);
-            $result = mysqli_query($conn, "UPDATE usertags SET name='$name',listorder='$listorder',isstaff='$isstaff' WHERE id='$id'");
+            $result = mysqli_query($conn, "UPDATE usertags SET name='$name',listorder='$listorder' WHERE id='$id'");
             mysqli_close($conn);
         }
 
-        public function user_has_permission($userid, $permission){ //can a user with tihs usertag do something based on the tags allowed permissions?
-        	$taglist = accounts::get_user_tags($userid);
+        public function edit_permissions($id, $permissions){
+            $conn = get_mysql_conn();
+            $id = mysqli_real_escape_string($conn, $id);
+            $permissions = mysqli_real_escape_string($conn, $permissions);
+            $result = mysqli_query($conn, "UPDATE usertags SET permissions='$permissions' WHERE id='$id'");
+            mysqli_close($conn);
+        }
 
-        	foreach($taglist as $tag){
-        	    $tag = self::get_by_id($tag);
-        		$tag_name = $tag->name;
-        		if(accounts::get_current_account()->unbantime > 0){
-        			return false;
-        		}
-        		$conn = get_mysql_conn();
-        		$permissions_query = mysqli_query($conn, "SELECT permissions FROM usertags WHERE listorder <= '$tag->listorder'");
-        		while($permissions_q_array[] = mysqli_fetch_object($permissions_query));
-        		foreach($permissions_q_array as $value_perm){
-                    if($value_perm){
-                        foreach(json_decode($value_perm->permissions) as $value){
-                            $value = str_replace(" ", "", $value);
-                            if($value == "*"){
-                                mysqli_close($conn);
-                                return true;
-                            }elseif($value == $permission){
-                                mysqli_close($conn);
-                                return true;
-                            }
+        public function user_has_permission($taglist, $permission, $checkBanned=true){ //can a user with tihs usertag do something based on the tags allowed permissions?
+            if(isset($taglist)){
+            	foreach($taglist as $tag){
+            	    $tag = self::get_by_id($tag);
+            		$tag_name = $tag->name;
+					if($checkBanned){
+						if(accounts::is_logged_in() && accounts::get_current_account()->unbantime > 0){
+							return false;
+						}
+					}else{
+						if(!accounts::is_logged_in()){
+							return false;
+						}
+					}
+                    foreach(json_decode($tag->permissions) as $value){
+                        $value = str_replace(" ", "", $value);
+                        if($value == "*"){
+                            return true;
+                        }elseif($value == $permission){
+                            return true;
                         }
                     }
-        		}
-        		mysqli_close($conn);
-        		return false;
-        	}
+                    /*$conn = get_mysql_conn(); //Multi tear support
+            		$permissions_query = mysqli_query($conn, "SELECT permissions FROM usertags WHERE listorder <= '$tag->listorder'");
+            		while($permissions_q_array[] = mysqli_fetch_object($permissions_query));
+            		foreach($permissions_q_array as $value_perm){
+                        if($value_perm){
+                            foreach(json_decode($value_perm->permissions) as $value){
+                                $value = str_replace(" ", "", $value);
+                                if($value == "*"){
+                                    return true;
+                                }elseif($value == $permission){
+                                    return true;
+                                }
+                            }
+                        }
+            		}*/
+            	}
+            }
         	return false;
         }
 
@@ -151,15 +210,51 @@
         }
 
         //I couldn't really think of a shorter way to do this... Brace for the long cancerous functions!
-        public function permissions(){
+        public function getpermissions(){
             $permissions = [];
-            $permissionsInfo = [];
 
-            $permissions[] = "forums_createpost";
-            $permissions[] = "forums_deleteownpost";
-            $permissions[] = "forums_deleteposts";
+            $permissions["forums"] = ["Forums"];
+            $permissions["forums"][] = ["createthread", "Create a thread"];
+            $permissions["forums"][] = ["deleteownpost", "Delete own posts"];
+            $permissions["forums"][] = ["deleteposts", "Delete other's posts"];
+            $permissions["forums"][] = ["editownpost", "Edit own posts"];
+            $permissions["forums"][] = ["editposts", "Edit other's posts"];
+            $permissions["forums"][] = ["lockunlock", "Lock/unlock threads"];
+            $permissions["forums"][] = ["pinunpin", "Pin/unpin threads"];
+            $permissions["forums"][] = ["hideunhide", "Hide/unhide threads, as well as see hidden threads"];
 
-            return [$permissions, $permissionsInfo];
+            $permissions["adminPanel"] = ["Admin Panel"];
+            $permissions["adminPanel"][] = ["settingstab", "View the settings tab"];
+            $permissions["adminPanel"][] = ["forumstab", "View the forums tab"];
+            $permissions["adminPanel"][] = ["userstab", "View the users tab"];
+            $permissions["adminPanel"][] = ["usertagstab", "View the usertags tab"];
+            $permissions["adminPanel"][] = ["permissionstab", "View the permissions tab"];
+            $permissions["adminPanel"][] = ["sessionstab", "View the sessions tab"];
+            $permissions["adminPanel"][] = ["logstab", "View the logs tab"];
+
+            $permissions["usersPanel"] = ["Users Panel"];
+            $permissions["usersPanel"][] = ["manageusertags", "Manage usertags"];
+            $permissions["usersPanel"][] = ["viewwarnings", "View warnings"];
+            $permissions["usersPanel"][] = ["viewiphistory", "View IP history"];
+            $permissions["usersPanel"][] = ["warnuser", "Warn user"];
+            $permissions["usersPanel"][] = ["banuser", "Ban user"];
+            $permissions["usersPanel"][] = ["setdisplayname", "Set display name"];
+            $permissions["usersPanel"][] = ["setpostscount", "Set posts count"];
+            $permissions["usersPanel"][] = ["deleteallposts", "Delete all posts"];
+
+			$permissions["usertagsPanel"] = ["Usertags Panel"];
+			$permissions["usertagsPanel"][] = ["ignoreusertagslistorder", "View and edit all usertags regardless of their listorder"];
+    		$permissions["usertagsPanel"][] = ["updateusertag", "Update usertags"];
+    		$permissions["usertagsPanel"][] = ["makeusertagdefault", "Make a usertag the default usertag"];
+    		$permissions["usertagsPanel"][] = ["addusertag", "Create/delete usertags"];
+
+            $permissions["permissionsPanel"] = ["Permissions Panel"];
+            $permissions["permissionsPanel"][] = ["updatepermissions", "Update permissions"];
+
+            $permissions["sessionsPanel"] = ["Sessions Panel"];
+            $permissions["sessionsPanel"][] = ["deletesession", "Delete session"];
+
+            return $permissions;
         }
     }
 ?>

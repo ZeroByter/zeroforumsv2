@@ -28,6 +28,9 @@
     margin: 0px 10px;
     text-align: left;
 }
+.subforum_text{
+    width: 186px;
+}
 .subforum_image[src=""]{
     visibility: hidden;
 }

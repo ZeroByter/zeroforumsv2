@@ -1,7 +1,8 @@
-<div class="modal" id="loginModal" tabindex="-1" data-backdrop="static" data-keyboard="false">
+<div class="modal" id="loginModal" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 <h4 class="modal-title">Login</h4>
             </div>
             <form id="loginForm">
@@ -16,7 +17,6 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <a href="/"><button type="button" class="btn btn-default">Home</button></a>
                     <a href="/user/register"><button type="button" class="btn btn-default">Register</button></a>
                     <button type="submit" class="btn btn-primary">Login</button>
                 </div>
@@ -27,19 +27,18 @@
 
 <script>
     $("#loginModal").modal("show")
+	$("#loginModal").on("hide.bs.modal", function(){
+		window.location = "<?php echo (isset($_GET["next"])) ? $_GET["next"] : "/" ?>"
+	})
 
     $("#loginForm").submit(function(){
         $.post("/phpscripts/requests/login.php", {username: $("#usernameInput").val(), password: $("#passwordInput").val()}, function(html){
             console.log(html)
             if(html == "success"){
-                <?php if($url["path"][0] == "user" && $url["path"][1] == "login"){ ?>
-                    window.location = "/"
-                <?php }else{ ?>
-                    window.location = "<?php echo $_SERVER['REQUEST_URI'] ?>"
-                <?php } ?>
+                window.location = "<?php echo (isset($_GET["next"])) ? $_GET["next"] : "/" ?>"
             }else{
                 $.notify({
-                    message: html.split("error:")[1],
+                    message: html,
                 },{
                     type: "danger",
                     z_index: 103001,

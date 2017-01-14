@@ -1,0 +1,45 @@
+.threadBody{
+    border-radius: 2px;
+    border: #b7b7b7 1px solid;
+    overflow: auto;
+}
+.threadRow:first-of-type > .threadBody{
+    border-top: #b7b7b7 1px solid;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+.threadRow:not(:first-of-type) > .threadBody{
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-top: none;
+}
+.threadBodyInfo{
+    float: left;
+    width: 180px;
+    padding: 16px;
+}
+.threadBodyText{
+    float: left;
+    border-left: #b7b7b7 1px solid;
+    padding: 10px;
+    min-height: 52px;
+}
+.threadBodyControls{
+    float: right;
+    margin: 10px;
+}
+.postedDate{
+    padding-top: 20px;
+    height: 20px;
+    display: block;
+}
+
+.threadLabel{
+    display: inline-block;
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+#threadControls{
+    margin: 8px;
+}

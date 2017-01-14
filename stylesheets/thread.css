@@ -3,13 +3,43 @@
     border: #b7b7b7 1px solid;
     overflow: auto;
 }
+.threadRow:first-of-type > .threadBody{
+    border-top: #b7b7b7 1px solid;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+.threadRow:not(:first-of-type) > .threadBody{
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-top: none;
+}
 .threadBodyInfo{
-    float: left;
-    min-width: 180px;
+    display: table-cell;
+    width: 180px;
     padding: 16px;
 }
 .threadBodyText{
-    float: left;
+    display: table-cell;
     border-left: #b7b7b7 1px solid;
     padding: 10px;
+}
+.threadBodyControls{
+    //float: right;
+    margin-top: 20px;
+    //margin: 10px;
+}
+.postedDate{
+    padding-top: 20px;
+    height: 20px;
+    display: block;
+}
+
+.threadLabel{
+    display: inline-block;
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+#threadControls{
+    margin: 8px;
 }

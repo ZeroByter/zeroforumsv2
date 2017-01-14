@@ -1,2 +1,73 @@
-sorry dude, we cant find the file
-<img src="data:image/jpeg;base64,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"></img>
+<style>
+    #errortext{
+        font-size: 70px;
+        color: grey;
+    }
+
+    #urlScrolDiv{
+        overflow: hidden;
+        margin-top: 60px;
+        width: 80%;
+        height: 40px;
+        padding: 10px;
+        background: white;
+    }
+
+    .lenny{
+        position: fixed;
+    }
+</style>
+
+<center>
+    <h2>There is nothing here, and probably never will be.</h2>
+    <h3>We looked everywhere, we even hacked the pentagon for you, we really did :(</h3>
+
+    <span id="errortext"><i>#got404ed</i></span>
+
+    <div id="urlScrolDiv"></div>
+</center>
+
+<script>
+    var urls = ["/", "/forums", "/index", "/subforums", "/thread", "/user/login", "/user/register", "The pentagon"]
+    var urlNumber = 0
+
+    setInterval(function(){
+        urlNumber += 1
+        $("#urlScrolDiv").html("We looked through: <b>" + urls[urlNumber] + "</b>")
+        if(urlNumber >= urls.length-1){
+            urlNumber = 0
+        }
+    }, 1000)
+
+    var easterEgg = false
+    if(easterEgg){
+        var lennyFace = "( ͡° ͜ʖ ͡°)"
+        var isFocus = true
+        window.onfocus = function(){
+            isFocus = true
+        }
+        window.onblur = function(){
+            isFocus = false
+        }
+
+        setInterval(function(){
+            if(isFocus){
+                var lenny = $("<div class='lenny'>"+lennyFace+"</div>")
+                $("body").append(lenny)
+                lenny.attr("data-rotate", "0")
+                lenny.css("top", "0px")
+                lenny.css("left", (Math.floor((Math.random() * window.innerWidth) + 0)) + "px")
+            }
+        }, 500)
+        setInterval(function(){
+            $(".lenny").each(function(i, v){
+                $(v).css("top", parseInt($(v).css("top")) + 1)
+                $(v).attr("data-rotate", parseInt($(v).attr("data-rotate")) + 1)
+                $(v).css("transform", "rotate("+parseInt($(v).attr("data-rotate"))+"deg)")
+                if(parseInt($(v).css("top")) > window.innerHeight){
+                    $(v).remove()
+                }
+            })
+        })
+    }
+</script>
