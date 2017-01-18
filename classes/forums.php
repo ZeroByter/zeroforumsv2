@@ -154,7 +154,8 @@ To do all this, click the \'[u]Admin Panel[/u]\' button on the top-left corner o
     		$listorder = mysqli_real_escape_string($conn, $listorder);
             $poster = accounts::get_current_account()->id;
     		$time = time();
-    		mysqli_query($conn, "INSERT INTO forums(firstposted, lastactive, type, title, text, listorder, poster) VALUES ('$time', '$time', 'forum', '$title', '$text', '$listorder', '$poster')");
+			$array = json_encode(["all"]);
+    		mysqli_query($conn, "INSERT INTO forums(firstposted, lastactive, type, title, text, listorder, poster, canview, canpost) VALUES ('$time', '$time', 'forum', '$title', '$text', '$listorder', '$poster', '$array', '$array')");
     		mysqli_close($conn);
         }
 
@@ -166,8 +167,11 @@ To do all this, click the \'[u]Admin Panel[/u]\' button on the top-left corner o
     		$listorder = mysqli_real_escape_string($conn, $listorder);
             $poster = accounts::get_current_account()->id;
     		$time = time();
-    		mysqli_query($conn, "INSERT INTO forums(parent, firstposted, lastactive, type, title, text, listorder, poster) VALUES ('$parent', '$time', '$time', 'subforum', '$title', '$text', '$listorder', '$poster')");
-    		mysqli_close($conn);
+			$array = json_encode(["all"]);
+    		mysqli_query($conn, "INSERT INTO forums(parent, firstposted, lastactive, type, title, text, listorder, poster, canview, canpost) VALUES ('$parent', '$time', '$time', 'subforum', '$title', '$text', '$listorder', '$poster', '$array', '$array')");
+			$lastcreatedid = mysqli_insert_id($conn);
+			mysqli_close($conn);
+			return $lastcreatedid;
         }
 
         public function update_lastactive($id){
@@ -233,6 +237,17 @@ To do all this, click the \'[u]Admin Panel[/u]\' button on the top-left corner o
     		mysqli_close($conn);
         }
 
+        public function editforum($id, $title, $text, $listorder){
+            $conn = get_mysql_conn();
+            $id = mysqli_real_escape_string($conn, $id);
+            $title = mysqli_real_escape_string($conn, $title);
+            $text = mysqli_real_escape_string($conn, $text);
+            $listorder = mysqli_real_escape_string($conn, $listorder);
+            $currAccount = accounts::get_current_account()->id;
+    		$result = mysqli_query($conn, "UPDATE forums SET title='$title',text='$text',listorder='$listorder' WHERE id='$id'");
+    		mysqli_close($conn);
+        }
+
         public function delete($id, $status){
             $conn = get_mysql_conn();
             $id = mysqli_real_escape_string($conn, $id);
@@ -241,5 +256,94 @@ To do all this, click the \'[u]Admin Panel[/u]\' button on the top-left corner o
             $result = mysqli_query($conn, "UPDATE forums SET deletestatus='$status',deletedby='$currAccount' WHERE id='$id'");
             mysqli_close($conn);
         }
+
+        public function forumdelete($id){
+            $repliesarray = array();
+            $threadsarray = array();
+            $subforumsarray = array();
+
+            $conn = get_mysql_conn();
+            $id = mysqli_real_escape_string($conn, $id);
+    		$subforums = mysqli_query($conn, "SELECT * FROM forums WHERE parent='$id'");
+            while($subforumsarray[] = mysqli_fetch_object($subforums));
+
+            foreach($subforumsarray as $value){
+                if($value){
+                    $threads = mysqli_query($conn, "SELECT * FROM forums WHERE parent='$value->id'");
+                    while($threadsarray[] = mysqli_fetch_object($threads));
+                    mysqli_query($conn, "DELETE FROM forums WHERE id='$value->id'");
+                }
+            }
+            foreach($threadsarray as $value){
+                if($value){
+                    $replys = mysqli_query($conn, "SELECT * FROM forums WHERE parent='$value->id'");
+                    while($repliesarray[] = mysqli_fetch_object($replys));
+                    mysqli_query($conn, "DELETE FROM forums WHERE id='$value->id'");
+                }
+            }
+            foreach($repliesarray as $value){
+                if($value){
+                    mysqli_query($conn, "DELETE FROM forums WHERE id='$value->id'");
+                }
+            }
+
+            mysqli_query($conn, "DELETE FROM forums WHERE id='$id'");
+
+            mysqli_close($conn);
+        }
+
+        public function subforumdelete($id){
+            $repliesarray = array();
+            $threadsarray = array();
+
+            $conn = get_mysql_conn();
+            $id = mysqli_real_escape_string($conn, $id);
+            $threads = mysqli_query($conn, "SELECT * FROM forums WHERE parent='$id'");
+            while($threadsarray[] = mysqli_fetch_object($threads));
+
+            foreach($threadsarray as $value){
+                if($value){
+                    $replys = mysqli_query($conn, "SELECT * FROM forums WHERE parent='$value->id'");
+                    while($repliesarray[] = mysqli_fetch_object($replys));
+                    mysqli_query($conn, "DELETE FROM forums WHERE id='$value->id'");
+                }
+            }
+            foreach($repliesarray as $value){
+                if($value){
+                    mysqli_query($conn, "DELETE FROM forums WHERE id='$value->id'");
+                }
+            }
+
+            mysqli_query($conn, "DELETE FROM forums WHERE id='$id'");
+
+            mysqli_close($conn);
+        }
+		
+		public function get_forum_perms($id, $type){
+			if($type == "canview" || $type == "canpost"){
+				$conn = get_mysql_conn();
+				$id = mysqli_real_escape_string($conn, $id);
+				$type = mysqli_real_escape_string($conn, $type);
+				$result = mysqli_query($conn, "SELECT $type FROM forums WHERE id='$id'");
+				mysqli_close($conn);
+				
+				$permission = json_decode(mysqli_fetch_object($result)->$type);
+				if(gettype($permission) == "NULL"){
+					return array();
+				}else{
+					return $permission;
+				}
+			}
+		}
+		
+		public function set_forum_perms($id, $type, $permissions){
+			if($type == "canview" || $type == "canpost"){
+				$conn = get_mysql_conn();
+				$id = mysqli_real_escape_string($conn, $id);
+				$type = mysqli_real_escape_string($conn, $type);
+				$result = mysqli_query($conn, "UPDATE forums SET $type='$permissions' WHERE id='$id'");
+				mysqli_close($conn);
+			}
+		}
     }
 ?>

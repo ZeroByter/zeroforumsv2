@@ -8,14 +8,6 @@
 		return;
 	}
 
-	start_session();
-
-	$currUsertags = [];
-	if(accounts::is_logged_in()){
-		$currAccount = accounts::get_current_account();
-		$currUsertags = accounts::get_current_usertags();
-	}
-
 	//Main performance cause when loading pages is due to lots of user_has_permission functions. Adding onto the slower times is because user_has_permission checks if users are banned (which requires a MySQL query which takes EVEN longer).
 	//A solution must be found at once, but for now it is sort of tolerable. Just make sure ALL requests check if user has permission to do the requested action first.
 	// ### SECURITY COMES FIRST ###
@@ -38,6 +30,29 @@
 	$includeHead = true;
 	$informBans = true;
 	if(file_exists("config.php")){
+		$settings = include("config.php");
+		start_session();
+		
+		$currUsertags = [];
+		if(accounts::is_logged_in()){
+			$currAccount = accounts::get_current_account();
+			if(!isset($_SESSION["usertags"])){
+				$_SESSION["usertags"] = [];
+			}
+			if(!isset($_SESSION["permissions"])){
+				$_SESSION["permissions"] = [];
+			}
+			if(isset($_SESSION["lastUsertagsUpdate"])){
+				if(time() - $_SESSION["lastUsertagsUpdate"] > $settings || $_SESSION["usertags"] == []){ //update session usertags and permissions every xx seconds
+					$_SESSION["lastUsertagsUpdate"] = time();
+					$_SESSION["usertags"] = accounts::get_current_usertags();
+					$_SESSION["permissions"] = accounts::get_all_permissions();
+					//echo "updated usertags and permissions!";
+				}
+			}
+			$currUsertags = $_SESSION["usertags"];
+		}
+		
 		$page = "/pages/errors/notfound.php"; //if we didn't assign a page dir by the end of the code, display 404
 		if($url["path"][0] == "" || $url["path"][0] == "index"){ //display main index page
 			//$page = "/pages/index.php";
@@ -51,10 +66,12 @@
 		}
 		if($url["path"][0] == "subforum"){ //display subforums page
 			if(isset($url["path"][1]) && $url["path"][1] != ""){
-				$subforumID = $url["path"][1];
-				$page = "/pages/forums/subforum.php";
-				if(isset($url["path"][2]) && $url["path"][2] == "postthread"){
-					$page = "/pages/forums/postthread.php";
+				$subforum = forums::get_by_id($url["path"][1]);
+				if(usertags::can_tag_do($currUsertags, $subforum->canview) && $subforum->type == "subforum"){
+					$page = "/pages/forums/subforum.php";
+					if(isset($url["path"][2]) && $url["path"][2] == "postthread"){
+						$page = "/pages/forums/postthread.php";
+					}
 				}
 			}else{
 				header("Location:/");
@@ -62,8 +79,11 @@
 		}
 		if($url["path"][0] == "thread"){ //start thread section
 			if(isset($url["path"][1]) && $url["path"][1] != ""){ //main thread
-				$threadID = $url["path"][1];
-				$page = "/pages/forums/thread.php";
+				$thread = forums::get_by_id($url["path"][1]);
+				$parent = forums::get_by_id($thread->parent);
+				if(isset($thread->id) && $thread->type == "thread" && usertags::can_tag_do($currUsertags, $parent->canview)){
+					$page = "/pages/forums/thread.php";
+				}
 			}else{
 				header("Location:/");
 			}
@@ -76,6 +96,7 @@
 			}
 			if(isset($url["path"][2]) && $url["path"][2] == "editthread"){ //edit thread
 				if(isset($currAccount)){
+					$thread = forums::get_by_id($url["path"][1]);
 					$page = "/pages/forums/editthread.php";
 				}else{
 					$page = "/pages/errors/nopermission.php";
@@ -107,8 +128,16 @@
 					$page = "/admin/pages/forums.php";
 					if(isset($url["path"][2]) && $url["path"][2] != ""){
 						$forum = forums::get_by_id($url["path"][2]);
-						if(isset($forum->id) && $forum->type == "subforum" || $forum->type == "forum"){
-							$page = "/admin/pages/updateforum.php";
+						if(isset($forum->id)){
+							if($forum->type == "subforum" || $forum->type == "forum"){
+								$page = "/admin/pages/updateforum.php";
+							}
+						}
+						if($url["path"][2] == "new"){
+							$page = "/admin/pages/createforum.php";
+						}
+						if(isset($url["path"][3]) && $url["path"][3] != "" && $forum->type == "forum"){
+							$page = "/admin/pages/createsubforum.php";
 						}
 					}
 				}

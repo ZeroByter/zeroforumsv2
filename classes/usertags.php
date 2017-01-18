@@ -51,7 +51,7 @@
             $array = array();
 
             while($array[] = mysqli_fetch_object($result));
-            return $array;
+            return array_filter($array);
         }
 
 		public function get_highest_listorder($usertags){
@@ -90,15 +90,14 @@
             return $array;
         }
 
-        public function add_usertag($name, $permissions, $listorder, $isdefault=false, $isstaff=false){
+        public function add_usertag($name, $listorder, $isdefault=false, $isstaff=false){
             $conn = get_mysql_conn();
             $name = mysqli_real_escape_string($conn, $name);
-            $permissions = json_encode($permissions);
-            $permissions = mysqli_real_escape_string($conn, $permissions);
             $listorder = mysqli_real_escape_string($conn, $listorder);
             $isdefault = mysqli_real_escape_string($conn, $isdefault);
             $isstaff = mysqli_real_escape_string($conn, $isstaff);
-            $result = mysqli_query($conn, "INSERT INTO usertags(name, permissions, listorder, isdefault, isstaff) VALUES ('$name', '$permissions', '$listorder', '$isdefault', '$isstaff')");
+			$array = [];
+            $result = mysqli_query($conn, "INSERT INTO usertags(name, permissions, listorder, isdefault, isstaff) VALUES ('$name', '[]', '$listorder', '$isdefault', '$isstaff')");
 			$createdID = mysqli_insert_id($conn);
             mysqli_close($conn);
 			return $createdID;
@@ -133,7 +132,17 @@
         }
 
         public function user_has_permission($taglist, $permission, $checkBanned=true){ //can a user with tihs usertag do something based on the tags allowed permissions?
-            if(isset($taglist)){
+			$permissions = [];
+			if(isset($_SESSION["permissions"])){ $permissions = $_SESSION["permissions"]; }
+			foreach($permissions as $value){
+				$value = str_replace(" ", "", $value);
+				if($value == "*"){
+					return true;
+				}elseif($value == $permission){
+					return true;
+				}
+			}
+            /*if(isset($taglist)){
             	foreach($taglist as $tag){
             	    $tag = self::get_by_id($tag);
             		$tag_name = $tag->name;
@@ -154,31 +163,45 @@
                             return true;
                         }
                     }
-                    /*$conn = get_mysql_conn(); //Multi tear support
-            		$permissions_query = mysqli_query($conn, "SELECT permissions FROM usertags WHERE listorder <= '$tag->listorder'");
-            		while($permissions_q_array[] = mysqli_fetch_object($permissions_query));
-            		foreach($permissions_q_array as $value_perm){
-                        if($value_perm){
-                            foreach(json_decode($value_perm->permissions) as $value){
-                                $value = str_replace(" ", "", $value);
-                                if($value == "*"){
-                                    return true;
-                                }elseif($value == $permission){
-                                    return true;
-                                }
-                            }
-                        }
-            		}*/
             	}
-            }
+            }*/
         	return false;
         }
 
-        public function can_tag_do($userid, $canDoString){ //can the user with this usertag do something simply because of his tag?
-            $taglist = accounts::get_user_tags($userid);
+		public function usertag_has_permission($tagid, $permission, $checkBanned=true){
+			$tag = self::get_by_id($tagid);
+			$tag_name = $tag->name;
+			if($checkBanned){
+				if(accounts::is_logged_in() && accounts::get_current_account()->unbantime > 0){
+					return false;
+				}
+			}else{
+				if(!accounts::is_logged_in()){
+					return false;
+				}
+			}
+			//foreach(json_decode($tag->permissions) as $value){
+			foreach($_SESSION["permissions"] as $value){ //based off session
+				$value = str_replace(" ", "", $value);
+				if($value == "*"){
+					return true;
+				}elseif($value == $permission){
+					return true;
+				}
+			}
+		}
 
+        public function can_tag_do($taglist, $canDoString){ //can the user with this usertag do something simply because of his tag?
         	$currentAccount = accounts::get_current_account();
-        	foreach($taglist as $tag){
+			foreach(json_decode($canDoString) as $value){
+				if($value == "all"){
+					return true; //if the permissoin string allows all, well, we are a part of 'everyone'... right?
+				}
+			}
+			//TODO make this based off session as well
+			$usertags = [];
+			if(isset($_SESSION["usertags"])){ $usertags = $_SESSION["usertags"]; }
+			foreach($usertags as $tag){
         	    $tag = self::get_by_id($tag);
         		$tag_name = $tag->name;
         		foreach(json_decode($canDoString) as $value){
@@ -197,6 +220,9 @@
         			/*if($value == "unregistered" && !isset($currentAccount->id)){
         				return true; //disabled due to compability purposes
         			}*/
+					if(self::usertag_has_permission($tag->id, "ignorecando")){
+						return true;
+					}
 
         			if(is_numeric($value) && isset($currentAccount->id)){
         				if(intval($value) == $tag->id){
@@ -206,12 +232,43 @@
         		}
         		return false;
         	}
+        	/*foreach($taglist as $tag){
+        	    $tag = self::get_by_id($tag);
+        		$tag_name = $tag->name;
+        		foreach(json_decode($canDoString) as $value){
+        			$value = str_replace(" ", "", $value);
+        			if($value == "all"){
+        				return true; //if the permissoin string allows all, well, we are a part of 'everyone'... right?
+        			}
+        			if($value == "staff" && isset($currentAccount->id)){
+        				if($tag->isstaff){
+        					return true; //if the permission string only allows staff and our tag is a staff tag, hooray!
+        				}
+        			}
+        			if($value == "registered" && isset($currentAccount->id)){
+        				return true; //if the permission string only allows registered people and we are registered, hooray!
+        			}
+					if(self::usertag_has_permission($tag->id, "ignorecando")){
+						return true;
+					}
+
+        			if(is_numeric($value) && isset($currentAccount->id)){
+        				if(intval($value) == $tag->id){
+        					return true; //still have to work out the whole mulitple tags business
+        				}
+        			}
+        		}
+        		return false;
+        	}*/
         	return false;
         }
 
         //I couldn't really think of a shorter way to do this... Brace for the long cancerous functions!
         public function getpermissions(){
             $permissions = [];
+
+			$permissions["other"] = ["Other"];
+			$permissions["other"][] = ["ignorecando", "Ignore all 'can do' restrictions"];
 
             $permissions["forums"] = ["Forums"];
             $permissions["forums"][] = ["createthread", "Create a thread"];
@@ -231,6 +288,10 @@
             $permissions["adminPanel"][] = ["permissionstab", "View the permissions tab"];
             $permissions["adminPanel"][] = ["sessionstab", "View the sessions tab"];
             $permissions["adminPanel"][] = ["logstab", "View the logs tab"];
+
+            $permissions["forumsPanel"] = ["Forums Panel"];
+            $permissions["forumsPanel"][] = ["createforums", "Create/delete forums"];
+            $permissions["forumsPanel"][] = ["updateforums", "Update forums"];
 
             $permissions["usersPanel"] = ["Users Panel"];
             $permissions["usersPanel"][] = ["manageusertags", "Manage usertags"];

@@ -1,5 +1,4 @@
 <?php
-    $thread = forums::get_by_id($threadID);
     $parent = forums::get_by_id($thread->parent);
     $parent2 = forums::get_by_id($parent->parent);
 ?>
@@ -8,7 +7,7 @@
 <div class="container">
     <div class="row">
         <ol class="breadcrumb">
-            <li><a href="/">Forums</a></li>
+            <li><a href="/forums">Forums</a></li>
             <li><a href="javascript:"><?php echo $parent2->title ?></a></li>
             <li><a href="/subforum/<?php echo $parent->id ?>"><?php echo $parent->title ?></a></li>
             <li><a href="/thread/<?php echo $thread->id ?>"><?php echo $thread->title ?></a></li>

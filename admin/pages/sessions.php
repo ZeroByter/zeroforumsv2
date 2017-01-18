@@ -13,6 +13,7 @@
 <div class="container">
 	<div class="row">
 		<div class="col-md-8 col-sm-offset-2">
+			Your current session ID: <?php echo sessions::get_session($_SESSION["sessionid"])->id ?>
 			<table class="table table-stripped table-hover">
 				<thead>
 					<tr>

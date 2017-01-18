@@ -7,6 +7,11 @@
 		$currUsertags = accounts::get_current_usertags();
 	}
 	$usertag = usertags::get_by_id($_GET["id"]);
+	if($_GET["id"] == "banned"){
+		$usersList = accounts::get_all_banned();
+	}else{
+		$usersList = array_filter(accounts::get_by_usertag($usertag->id));
+	}
 ?>
 
 <style>
@@ -190,7 +195,7 @@
 		</tr>
 	</thead>
 	<tbody>
-	<?php foreach(array_filter(accounts::get_by_usertag($usertag->id)) as $value){
+	<?php foreach($usersList as $value){
 			$confirmBan = accounts::confirm_ban($value->id);
 			$isBanned = "";
 			if($confirmBan){

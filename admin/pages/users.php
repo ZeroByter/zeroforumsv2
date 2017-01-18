@@ -28,6 +28,9 @@
 
 <div id="usertagsSelection">
 	<center><h2>Usertags:</h2></center>
+	<div class="usertagListItem" data-id="banned">
+		<font color="red">Banned</font> <span class="label label-default"><?php echo count(accounts::get_all_banned()) ?></span>
+	</div>
 	<?php foreach(usertags::get_all_limited() as $value){ if($value){ ?>
 		<div class="usertagListItem" data-id="<?php echo $value->id ?>">
 			<?php echo $value->name ?> <span class="label label-default"><?php echo count(accounts::get_by_usertag($value->id))-1 ?></span>

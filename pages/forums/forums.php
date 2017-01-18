@@ -16,7 +16,7 @@
                                         <div class="container">
                                             <div class="row">
                                             <?php foreach(forums::get_all_subforums($value->id) as $value){
-                                                if($value){ ?>
+                                                if(!usertags::can_tag_do($currUsertags, $value->canview)){ continue; } ?>
                                                     <div class="col-md-4">
                                                         <a href="/subforum/<?php echo $value->id ?>" class="subforum_div">
                                                             <img src="<?php echo $value->icon ?>" class="subforum_image"></img>
@@ -26,7 +26,7 @@
                                                             </div>
                                                         </a>
                                                     </div>
-                                                <?php } } ?>
+											<?php } ?>
                                             </div>
                                         </div>
                                     </div>

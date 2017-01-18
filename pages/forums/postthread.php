@@ -1,12 +1,11 @@
 <?php
-    $subforum = forums::get_by_id($subforumID);
     $forum = forums::get_by_id($subforum->parent);
 ?>
 
 <div class="container">
     <div class="row">
         <ol class="breadcrumb">
-            <li><a href="/">Forums</a></li>
+            <li><a href="/forums">Forums</a></li>
             <li><a href="javascript:"><?php echo $forum->title ?></a></li>
             <li><a href="/subforum/<?php echo $subforum->id ?>"><?php echo $subforum->title ?></a></li>
         </ol>

@@ -40,7 +40,7 @@
 
         public function get_all_banned(){
             $conn = get_mysql_conn();
-    		$result = mysqli_query($conn, "SELECT id FROM accounts WHERE bannedtime - unbantime > 0");
+    		$result = mysqli_query($conn, "SELECT * FROM accounts WHERE unbantime - bannedtime > 0");
     		mysqli_close($conn);
             while($array[] = mysqli_fetch_object($result));
 			foreach(array_filter($array) as $value){
@@ -194,6 +194,9 @@
                     $sessionID = sessions::get_by_id(sessions::add_session($account->id))->sessionid;
                     $_SESSION["sessionid"] = $sessionID;
                     $_SESSION["forumsCooldown"] = 0;
+                    $_SESSION["lastUsertagsUpdate"] = 0;
+					$_SESSION["usertags"] = [];
+					$_SESSION["permissions"] = [];
 					mysqli_query($conn, "UPDATE accounts SET lastactive='" . time() . "' WHERE id='$account->id'");
                     mysqli_close($conn);
                     self::add_user_iplist($account->id);
@@ -347,7 +350,7 @@
         public function add_post_count($id){
             $conn = get_mysql_conn();
     		$id = mysqli_real_escape_string($conn, $id);
-    		$result = mysqli_query($conn, "UPDATE accounts SET posts=posts+1 WHERE id='$id'");
+    		$result = mysqli_query($conn, "UPDATE accounts SET posts=posts+1,lastactive='".time()."' WHERE id='$id'");
     		mysqli_close($conn);
         }
 
@@ -487,6 +490,18 @@
     		$newPassword = mysqli_real_escape_string($conn, $newPassword);
     		mysqli_query($conn, "UPDATE accounts SET password='$newPassword' WHERE id='$currAccount->id'");
     		mysqli_close($conn);
+		}
+
+		public function get_all_permissions(){
+			$array = [];
+			foreach(array_filter(self::get_current_usertags_or_default()) as $value){
+				foreach(json_decode(usertags::get_by_id($value)->permissions) as $value){
+					if(!in_array($value, $array)){
+						$array[] = $value;
+					}
+				}
+			}
+			return $array;
 		}
     }
 ?>

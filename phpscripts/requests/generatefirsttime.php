@@ -23,6 +23,7 @@
             $config["mysql"]["password"] = encrypt_text($_POST["mysqlPassword"], $config["key"]);
             $config["mysql"]["dbname"] = encrypt_text($_POST["mysqlDBName"], $config["key"]);
             $config["forumsCooldown"] = 30;
+            $config["updateUsertagsInterval"] = 8;
 
             file_put_contents($_SERVER['DOCUMENT_ROOT'] . "/config.php", "<?php return " . var_export($config, true) . ";");
 

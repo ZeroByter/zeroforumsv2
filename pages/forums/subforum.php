@@ -1,21 +1,20 @@
 <?php
     //$subforumID;
     //confirm subforum exists and if we are allowed to see it
-
-    $subforum = forums::get_by_id($subforumID);
+	
     $parent = forums::get_by_id($subforum->parent);
 ?>
 <link rel="stylesheet" type="text/css" href="/stylesheets/subforum.css"></link>
 
 <div class="container" id="main_threads_div">
     <ol class="breadcrumb">
-        <li><a href="/">Forums</a></li>
+        <li><a href="/forums">Forums</a></li>
         <li><a href="javascript:"><?php echo $parent->title ?></a></li>
         <li class="active"><?php echo $subforum->title ?></li>
     </ol>
-    <?php if(usertags::user_has_permission($currUsertags, "createthread")){ ?>
+    <?php if(usertags::user_has_permission($currUsertags, "createthread") && usertags::can_tag_do($currUsertags, $subforum->canpost)){ ?>
         <a href="/subforum/<?php echo $subforum->id ?>/postThread"><button class="btn btn-primary">Post thread</button></a><br><br>
-    <?php }; $pinnedThreads = forums::get_all_pinned_threads($subforumID);
+    <?php } $pinnedThreads = forums::get_all_pinned_threads($subforum->id);
     foreach($pinnedThreads as $value){
         if($value){
             $iconString = "";
@@ -41,7 +40,7 @@
             </div>
         <?php }
     }; //if(count($pinnedThreads)){ echo "<br><br><br><br>"; }?>
-    <?php foreach(forums::get_all_threads($subforumID) as $value){
+    <?php foreach(forums::get_all_threads($subforum->id) as $value){
         if($value){
             $iconString = "";
             if($value->locked){

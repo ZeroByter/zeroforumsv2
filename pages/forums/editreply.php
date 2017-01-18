@@ -1,6 +1,5 @@
 <?php
     $reply = forums::get_by_id($replyID);
-    $thread = forums::get_by_id($threadID);
     $subforum = forums::get_by_id($thread->parent);
     $forum = forums::get_by_id($subforum->parent);
 
@@ -13,7 +12,7 @@
 <div class="container">
     <div class="row">
         <ol class="breadcrumb">
-            <li><a href="/">Forums</a></li>
+            <li><a href="/forums">Forums</a></li>
             <li><a href="javascript:"><?php echo $forum->title ?></a></li>
             <li><a href="/subforum/<?php echo $subforum->id ?>"><?php echo $subforum->title ?></a></li>
             <li><a href="/thread/<?php echo $thread->id ?>"><?php echo $thread->title ?></a></li>

@@ -30,7 +30,7 @@
             $array = array();
 
             while($array[] = mysqli_fetch_object($result));
-            return $array;
+            return array_filter($array);
 		}
 
         public function get_all_by_date($date){

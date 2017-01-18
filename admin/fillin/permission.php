@@ -78,8 +78,7 @@
 		$.post("/admin/requests/updatepermissions.php", {usertagid: selectedUsertag, permissions: postPermissions}, function(html){
 			console.log(html)
 			if(html == "success"){
-				console.log($("[data-name='"+permissionUpdateName+"']"))
-				if($("[data-name='"+permissionUpdateName+"']").attr("data-state")){
+				if($("[data-name='"+permissionUpdateName+"']").attr("data-state") == "true"){
 					$("[data-name='"+permissionUpdateName+"']").attr("data-state", "false")
 				}else{
 					$("[data-name='"+permissionUpdateName+"']").attr("data-state", "true")
