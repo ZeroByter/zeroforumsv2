@@ -19,14 +19,17 @@
                 poster int(6) NOT NULL,
                 parent int(6) NOT NULL,
                 listorder int(6) NOT NULL,
+                canpost text NOT NULL,
+                canview text NOT NULL,
                 locked boolean NOT NULL,
                 hidden boolean NOT NULL,
                 pinned boolean NOT NULL,
                 PRIMARY KEY(id), UNIQUE id (id), KEY id_2 (id))");
 
             if($generate_setup){
-                mysqli_query($conn, "INSERT INTO forums(firstposted, lastactive, type, title, text, poster) VALUES ('".time()."', '".time()."', 'forum', 'Welcome to zeroforumsv2', '', '-1')");
-                mysqli_query($conn, "INSERT INTO forums(firstposted, lastactive, type, parent, title, text, poster) VALUES ('".time()."', '".time()."', 'subforum', 1, 'Your very first subforum!', 'Click me for more info.', '-1')");
+				$array = json_encode(["all"]);
+                mysqli_query($conn, "INSERT INTO forums(firstposted, lastactive, type, title, text, poster, canview, canpost) VALUES ('".time()."', '".time()."', 'forum', 'Welcome to zeroforumsv2', '', '-1', '$array', '$array')");
+                mysqli_query($conn, "INSERT INTO forums(firstposted, lastactive, type, parent, title, text, poster, canview, canpost) VALUES ('".time()."', '".time()."', 'subforum', 1, 'Your very first subforum!', 'Click me for more info.', '-1', '$array', '$array')");
                 mysqli_query($conn, "INSERT INTO forums(firstposted, lastactive, type, parent, title, text, poster) VALUES ('".time()."', '".time()."', 'thread', 2, 'Open me!', '[center][b]Congratulations on settings up your very first forum website![/b][/center]
 
 Now that your website is setup, you might be interesting in modifying the existent usertags, or possibly creating new ones of your own.
@@ -139,12 +142,12 @@ To do all this, click the \'[u]Admin Panel[/u]\' button on the top-left corner o
         public function get_all_posts_by_poster($poster){
             $conn = get_mysql_conn();
             $poster = mysqli_real_escape_string($conn, $poster);
-    		$result = mysqli_query($conn, "SELECT * FROM forums WHERE poster='$poster' && type='thread' || poster='$poster' && type='reply' ORDER BY firstposted DESC");
+    		$result = mysqli_query($conn, "SELECT * FROM forums WHERE poster='$poster' ORDER BY firstposted DESC");
     		mysqli_close($conn);
 
             while($array[] = mysqli_fetch_object($result));
 
-    		return $array;
+    		return array_filter($array);
         }
 
         public function create_forum($title, $text, $listorder){
@@ -244,7 +247,7 @@ To do all this, click the \'[u]Admin Panel[/u]\' button on the top-left corner o
             $text = mysqli_real_escape_string($conn, $text);
             $listorder = mysqli_real_escape_string($conn, $listorder);
             $currAccount = accounts::get_current_account()->id;
-    		$result = mysqli_query($conn, "UPDATE forums SET title='$title',text='$text',listorder='$listorder' WHERE id='$id'");
+    		mysqli_query($conn, "UPDATE forums SET title='$title',text='$text',listorder='$listorder' WHERE id='$id'");
     		mysqli_close($conn);
         }
 
@@ -253,7 +256,7 @@ To do all this, click the \'[u]Admin Panel[/u]\' button on the top-left corner o
             $id = mysqli_real_escape_string($conn, $id);
             $status = mysqli_real_escape_string($conn, $status);
             $currAccount = accounts::get_current_account()->id;
-            $result = mysqli_query($conn, "UPDATE forums SET deletestatus='$status',deletedby='$currAccount' WHERE id='$id'");
+            mysqli_query($conn, "UPDATE forums SET deletestatus='$status',deletedby='$currAccount' WHERE id='$id'");
             mysqli_close($conn);
         }
 
@@ -318,7 +321,7 @@ To do all this, click the \'[u]Admin Panel[/u]\' button on the top-left corner o
 
             mysqli_close($conn);
         }
-		
+
 		public function get_forum_perms($id, $type){
 			if($type == "canview" || $type == "canpost"){
 				$conn = get_mysql_conn();
@@ -326,7 +329,7 @@ To do all this, click the \'[u]Admin Panel[/u]\' button on the top-left corner o
 				$type = mysqli_real_escape_string($conn, $type);
 				$result = mysqli_query($conn, "SELECT $type FROM forums WHERE id='$id'");
 				mysqli_close($conn);
-				
+
 				$permission = json_decode(mysqli_fetch_object($result)->$type);
 				if(gettype($permission) == "NULL"){
 					return array();
@@ -335,7 +338,7 @@ To do all this, click the \'[u]Admin Panel[/u]\' button on the top-left corner o
 				}
 			}
 		}
-		
+
 		public function set_forum_perms($id, $type, $permissions){
 			if($type == "canview" || $type == "canpost"){
 				$conn = get_mysql_conn();
@@ -345,5 +348,14 @@ To do all this, click the \'[u]Admin Panel[/u]\' button on the top-left corner o
 				mysqli_close($conn);
 			}
 		}
+
+        public function delete_all_by_poster($poster){
+            $conn = get_mysql_conn();
+            $poster = mysqli_real_escape_string($conn, $poster);
+            $currAccount = accounts::get_current_account()->id;
+            mysqli_query($conn, "UPDATE forums SET deletestatus='2',deletedby='$currAccount' WHERE poster='$poster'");
+            accounts::set_post_count($poster, 0);
+            mysqli_close($conn);
+        }
     }
 ?>

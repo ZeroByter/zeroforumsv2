@@ -1,7 +1,7 @@
 <?php
     //$subforumID;
     //confirm subforum exists and if we are allowed to see it
-	
+
     $parent = forums::get_by_id($subforum->parent);
 ?>
 <link rel="stylesheet" type="text/css" href="/stylesheets/subforum.css"></link>
@@ -26,7 +26,7 @@
                 $previewString = substr($previewString, 0, 40);
                 $previewString .= "...";
             }
-			
+
             ?>
             <div class="row">
                 <div class="col-xl-1">
@@ -64,7 +64,7 @@
                     <a href="/thread/<?php echo $value->id ?>" class="thread">
                         <span class="threadTitle" data-toggle="tooltip" title="<?php echo $previewString ?>"><?php echo $value->title ?></span><span><?php echo $iconString ?></span>
                         <span class="threadDate"><?php echo get_human_time($value->lastactive) ?> ago</span>
-                        <span class="threadAuthor"><?php echo accounts::get_display_name($value->poster) ?></span>
+                        <span class="threadAuthor"><?php if($value->deletestatus == 1){ echo "<b><font color='red'>Thread deleted.</font></b>"; }else{ echo accounts::get_display_name($value->poster); } ?></span>
                         <span class="threadReplies"><?php echo $value->replies ?> <span class="fa fa-commenting-o"></span></span>
                     </a>
                 </div>

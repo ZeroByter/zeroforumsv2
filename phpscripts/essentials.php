@@ -77,4 +77,36 @@
         $string = str_replace("javascript:", "javascript : ", $string);
         return $string;
     }
+
+    function getCurrentVersion(){
+        $versionDir = $_SERVER['DOCUMENT_ROOT'] . "/version.txt";
+        if(file_exists($versionDir)){
+            $version = file_get_contents($versionDir);
+            return $version;
+        }else{
+            return 0;
+        }
+    }
+
+    function getGitHubVersion(){
+        return floatval(file_get_contents("https://raw.githubusercontent.com/ZeroByter/zeroforumsv2/master/version.txt"));
+    }
+
+    function compareVersions(){
+        $currentVersion = getCurrentVersion();
+        if($currentVersion == 0){
+            return 0;
+        }else{
+            $githubVersion = getGitHubVersion();
+            if($currentVersion > $githubVersion){
+                return 1;
+            }
+            if($currentVersion == $githubVersion){
+                return 2;
+            }
+            if($currentVersion < $githubVersion){
+                return 3;
+            }
+        }
+    }
 ?>

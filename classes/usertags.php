@@ -9,6 +9,7 @@
                 listorder int(6) NOT NULL,
                 isstaff boolean NOT NULL,
                 isdefault boolean NOT NULL,
+                textcolor varchar(32) NOT NULL,
                 PRIMARY KEY(id), UNIQUE id (id), KEY id_2 (id))");
             mysqli_close($conn);
         }
@@ -96,8 +97,7 @@
             $listorder = mysqli_real_escape_string($conn, $listorder);
             $isdefault = mysqli_real_escape_string($conn, $isdefault);
             $isstaff = mysqli_real_escape_string($conn, $isstaff);
-			$array = [];
-            $result = mysqli_query($conn, "INSERT INTO usertags(name, permissions, listorder, isdefault, isstaff) VALUES ('$name', '[]', '$listorder', '$isdefault', '$isstaff')");
+            $result = mysqli_query($conn, "INSERT INTO usertags(name, permissions, listorder, isdefault, isstaff, textcolor) VALUES ('$name', '[]', '$listorder', '$isdefault', '$isstaff', '#000000')");
 			$createdID = mysqli_insert_id($conn);
             mysqli_close($conn);
 			return $createdID;
@@ -114,19 +114,21 @@
             }
         }
 
-        public function edit_usertag($id, $name, $listorder){
+        public function edit_usertag($id, $name, $listorder, $textcolor="#000000"){
+            if(strlen($textcolor) != 7){
+                return false;
+            }
             $conn = get_mysql_conn();
             $id = mysqli_real_escape_string($conn, $id);
             $name = mysqli_real_escape_string($conn, $name);
             $listorder = mysqli_real_escape_string($conn, $listorder);
-            $result = mysqli_query($conn, "UPDATE usertags SET name='$name',listorder='$listorder' WHERE id='$id'");
+            $result = mysqli_query($conn, "UPDATE usertags SET name='$name',listorder='$listorder',textcolor='$textcolor' WHERE id='$id'");
             mysqli_close($conn);
         }
 
         public function edit_permissions($id, $permissions){
             $conn = get_mysql_conn();
             $id = mysqli_real_escape_string($conn, $id);
-            $permissions = mysqli_real_escape_string($conn, $permissions);
             $result = mysqli_query($conn, "UPDATE usertags SET permissions='$permissions' WHERE id='$id'");
             mysqli_close($conn);
         }
@@ -142,29 +144,6 @@
 					return true;
 				}
 			}
-            /*if(isset($taglist)){
-            	foreach($taglist as $tag){
-            	    $tag = self::get_by_id($tag);
-            		$tag_name = $tag->name;
-					if($checkBanned){
-						if(accounts::is_logged_in() && accounts::get_current_account()->unbantime > 0){
-							return false;
-						}
-					}else{
-						if(!accounts::is_logged_in()){
-							return false;
-						}
-					}
-                    foreach(json_decode($tag->permissions) as $value){
-                        $value = str_replace(" ", "", $value);
-                        if($value == "*"){
-                            return true;
-                        }elseif($value == $permission){
-                            return true;
-                        }
-                    }
-            	}
-            }*/
         	return false;
         }
 
@@ -193,18 +172,23 @@
 
         public function can_tag_do($taglist, $canDoString){ //can the user with this usertag do something simply because of his tag?
         	$currentAccount = accounts::get_current_account();
-			foreach(json_decode($canDoString) as $value){
+			$canDoString = json_decode($canDoString);
+			if(gettype($canDoString) == "NULL"){
+    			$canDoString = array();
+    		}else{
+    			$canDoString = $canDoString;
+    		}
+			foreach($canDoString as $value){
 				if($value == "all"){
 					return true; //if the permissoin string allows all, well, we are a part of 'everyone'... right?
 				}
 			}
-			//TODO make this based off session as well
 			$usertags = [];
 			if(isset($_SESSION["usertags"])){ $usertags = $_SESSION["usertags"]; }
 			foreach($usertags as $tag){
         	    $tag = self::get_by_id($tag);
         		$tag_name = $tag->name;
-        		foreach(json_decode($canDoString) as $value){
+        		foreach($canDoString as $value){
         			$value = str_replace(" ", "", $value);
         			if($value == "all"){
         				return true; //if the permissoin string allows all, well, we are a part of 'everyone'... right?
@@ -226,40 +210,12 @@
 
         			if(is_numeric($value) && isset($currentAccount->id)){
         				if(intval($value) == $tag->id){
-        					return true; //still have to work out the whole mulitple tags business
+        					return true;
         				}
         			}
         		}
         		return false;
         	}
-        	/*foreach($taglist as $tag){
-        	    $tag = self::get_by_id($tag);
-        		$tag_name = $tag->name;
-        		foreach(json_decode($canDoString) as $value){
-        			$value = str_replace(" ", "", $value);
-        			if($value == "all"){
-        				return true; //if the permissoin string allows all, well, we are a part of 'everyone'... right?
-        			}
-        			if($value == "staff" && isset($currentAccount->id)){
-        				if($tag->isstaff){
-        					return true; //if the permission string only allows staff and our tag is a staff tag, hooray!
-        				}
-        			}
-        			if($value == "registered" && isset($currentAccount->id)){
-        				return true; //if the permission string only allows registered people and we are registered, hooray!
-        			}
-					if(self::usertag_has_permission($tag->id, "ignorecando")){
-						return true;
-					}
-
-        			if(is_numeric($value) && isset($currentAccount->id)){
-        				if(intval($value) == $tag->id){
-        					return true; //still have to work out the whole mulitple tags business
-        				}
-        			}
-        		}
-        		return false;
-        	}*/
         	return false;
         }
 
@@ -300,7 +256,7 @@
             $permissions["usersPanel"][] = ["warnuser", "Warn user"];
             $permissions["usersPanel"][] = ["banuser", "Ban user"];
             $permissions["usersPanel"][] = ["setdisplayname", "Set display name"];
-            $permissions["usersPanel"][] = ["setpostscount", "Set posts count"];
+            $permissions["usersPanel"][] = ["setpostcount", "Set posts count"];
             $permissions["usersPanel"][] = ["deleteallposts", "Delete all posts"];
 
 			$permissions["usertagsPanel"] = ["Usertags Panel"];

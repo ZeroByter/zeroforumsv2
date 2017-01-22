@@ -14,14 +14,14 @@
     border-top: none;
 }
 .threadBodyInfo{
-    display: table-cell;
     width: 180px;
+    min-height: 80px;
     padding: 16px;
+	float: left;
 }
 .threadBodyText{
-    display: table-cell;
-    border-left: #b7b7b7 1px solid;
     padding: 10px;
+	overflow: hidden;
 }
 .threadBodyControls{
     //float: right;

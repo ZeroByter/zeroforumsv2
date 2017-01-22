@@ -162,11 +162,24 @@
         		$result = mysqli_query($conn, "SELECT username,displayname FROM accounts WHERE id='$id'");
         		mysqli_close($conn);
         		$object = mysqli_fetch_object($result);
+                $display_name = filterXSS($object->username);
+                if($object->displayname != ""){
+                    $display_name = filterXSS($object->displayname);
+                }else{
+                    $display_name = filterXSS($object->username);
+                }
+                foreach(self::get_user_tags($id) as $value){
+                    $textcolor = usertags::get_by_id($value)->textcolor;
+                    if(strlen($textcolor) == 7 && $textcolor != "#000000"){
+                        $display_name = "<font color='$textcolor'>$display_name</font>";
+                    }
+                    //var_dump($textcolor);
+                }
 
     			if($object->displayname != ""){
-    				return filterXSS($object->displayname);
+    				return $display_name;
     			}else{
-    				return filterXSS($object->username);
+    				return $display_name;
     			}
             }
         }

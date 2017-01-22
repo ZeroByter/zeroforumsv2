@@ -39,10 +39,10 @@
 				<div class="logWrapper" data-log="<?php echo $value->id ?>">
 					<b>Log level:</b> <?php echo $value->level ?><br>
 					<b>Source:</b> <?php echo $value->ip ?><br>
-					<b>Description:</b> <?php echo $value->description ?><br>
+					<b>Description:</b> <?php echo filterXSS($value->description); ?><br>
 					<b>Owner:</b> <?php
 						if($value->owner > 0){
-							echo accounts::get_by_id($value->owner)->username;
+							echo filterXSS(accounts::get_by_id($value->owner)->username);
 						}else{
 							echo $value->ip;
 						}

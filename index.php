@@ -3,7 +3,7 @@
 
 	$conn = get_mysql_conn();
 
-	if(gettype($conn) !== "object"){
+	if(gettype($conn) !== "object" && file_exists("config.php")){
 		echo "<b><br>A MySQL connection error occured!<br><br>If you a guest of the server. Report the above error message to the server owner and wait for it to be fixed, there isn't much you can do.<br>If you are the server owner, clean any and all tables from your MySQL database, then delete the '/config.php' file in the main index folder of your server and refresh the page to able to setup the MySQL connection.</b>";
 		return;
 	}
@@ -32,7 +32,7 @@
 	if(file_exists("config.php")){
 		$settings = include("config.php");
 		start_session();
-		
+
 		$currUsertags = [];
 		if(accounts::is_logged_in()){
 			$currAccount = accounts::get_current_account();
@@ -43,7 +43,7 @@
 				$_SESSION["permissions"] = [];
 			}
 			if(isset($_SESSION["lastUsertagsUpdate"])){
-				if(time() - $_SESSION["lastUsertagsUpdate"] > $settings || $_SESSION["usertags"] == []){ //update session usertags and permissions every xx seconds
+				if(time() - $_SESSION["lastUsertagsUpdate"] > $settings["updateUsertagsInterval"] || $_SESSION["usertags"] == []){ //update session usertags and permissions every xx seconds
 					$_SESSION["lastUsertagsUpdate"] = time();
 					$_SESSION["usertags"] = accounts::get_current_usertags();
 					$_SESSION["permissions"] = accounts::get_all_permissions();
@@ -52,7 +52,7 @@
 			}
 			$currUsertags = $_SESSION["usertags"];
 		}
-		
+
 		$page = "/pages/errors/notfound.php"; //if we didn't assign a page dir by the end of the code, display 404
 		if($url["path"][0] == "" || $url["path"][0] == "index"){ //display main index page
 			//$page = "/pages/index.php";
@@ -133,11 +133,15 @@
 								$page = "/admin/pages/updateforum.php";
 							}
 						}
-						if($url["path"][2] == "new"){
-							$page = "/admin/pages/createforum.php";
-						}
-						if(isset($url["path"][3]) && $url["path"][3] != "" && $forum->type == "forum"){
-							$page = "/admin/pages/createsubforum.php";
+						if(usertags::user_has_permission($currUsertags, "createforums")){
+							if($url["path"][2] == "new"){
+								$page = "/admin/pages/createforum.php";
+							}
+							if(isset($url["path"][3]) && $url["path"][3] != "" && $forum->type == "forum"){
+								$page = "/admin/pages/createsubforum.php";
+							}
+						}else{
+							$page = "/pages/errors/nopermission.php";
 						}
 					}
 				}
@@ -146,9 +150,36 @@
 				}
 				if($url["path"][1] == "usertags"){ //usertags
 					$page = "/admin/pages/usertags.php";
+					if(isset($url["path"][2]) && $url["path"][2] != ""){
+						$usertag = usertags::get_by_id($url["path"][2]);
+						if(isset($usertag->id)){
+							if(usertags::user_has_permission($currUsertags, "updateusertag")){
+								$page = "/admin/pages/updateusertag.php";
+							}else{
+								$page = "/pages/errors/nopermission.php";
+							}
+						}
+						if($url["path"][2] == "new"){
+							if(usertags::user_has_permission($currUsertags, "addusertag")){
+								$page = "/admin/pages/createusertag.php";
+							}else{
+								$page = "/pages/errors/nopermission.php";
+							}
+						}
+					}
 				}
 				if($url["path"][1] == "permissions"){ //permissions
 					$page = "/admin/pages/permissions.php";
+					if(isset($url["path"][2]) && $url["path"][2] != ""){
+						$usertag = usertags::get_by_id($url["path"][2]);
+						if(isset($usertag->id)){
+							if(usertags::user_has_permission($currUsertags, "updatepermissions")){
+								$page = "/admin/pages/updatepermissions.php";
+							}else{
+								$page = "/pages/errors/nopermission.php";
+							}
+						}
+					}
 				}
 				if($url["path"][1] == "sessions"){ //sessions
 					$page = "/admin/pages/sessions.php";
@@ -197,11 +228,15 @@
 			}
 		}
 
+		if($url["path"][0] == "about"){
+			$page = "/pages/about.php";
+		}
+
 		if($url["path"][0] == "403"){
 			$page = "/pages/errors/nopermission.php";
 		}
 		if($url["path"][0] == "404"){
-			$page = "/pages/errors/nopermission.php";
+			$page = "/pages/errors/notfound.php";
 		}
 	}else{
 		$showNavbar = false;
@@ -209,21 +244,9 @@
 	}
 ?>
 
-<head>
-	<?php if($includeHead){ ?>
-		<title>some forums test idk</title>
-		<link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap.css"></link>
-		<link rel="stylesheet" type="text/css" href="/stylesheets/animate.css"></link>
-		<link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap.override.css"></link>
-		<link rel="stylesheet" type="text/css" href="/stylesheets/base.css"></link>
-		<link rel="stylesheet" type="text/css" href="/stylesheets/font-awesome.css"></link>
-		<link rel="stylesheet" type="text/css" href="/stylesheets/zeroeditor.css"></link>
-	    <script src="/jsscripts/jquery.js"></script>
-	    <script src="/jsscripts/bootstrap.js"></script>
-	    <script src="/jsscripts/bootstrap-notify.js"></script>
-	    <script expires="0" src="/jsscripts/zeroeditor.js"></script>
-	<?php } ?>
-</head>
+<?php if($includeHead){
+	include("phpscripts/fillin/head.php");
+} ?>
 <div id="body_div">
 	<?php
 		if($adminNavbar){
@@ -328,5 +351,7 @@
 		unset($_SESSION["pageMessageType"]);
 	}
 
-	mysqli_close($conn);
+	if(gettype($conn) == "object"){
+		mysqli_close($conn);
+	}
  ?>

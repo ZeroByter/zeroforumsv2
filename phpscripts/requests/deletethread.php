@@ -18,6 +18,7 @@
                     echo "Error! Delete status is 0!";
                 }else{
                     forums::delete($_POST["id"], $status);
+                    logs::add_log("forums", "$1 deleted [thread:$thread->title] with [deletestatus:$status]", 2);
                     echo "success";
                 }
             }else{

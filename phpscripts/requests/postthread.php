@@ -14,7 +14,7 @@
                 $threadID = forums::create_thread($_POST["subforum"], $_POST["subject"], $_POST["text"]);
                 echo "success:$threadID";
                 accounts::add_post_count($currAccount->id);
-				logs::add_log("forums", "$1 posted a thread under [subforum:$subforum->title, $subforum->id]");
+				logs::add_log("forums", "$1 posted a thread under [subforum:$subforum->title]");
             }else{
                 echo "Forums cooldown! Please wait " . ($_SESSION["forumsCooldown"] + $settings["forumsCooldown"] - time()) . " seconds before posting on the forums again!";
             }

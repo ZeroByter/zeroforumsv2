@@ -59,6 +59,15 @@
 
             return $finalArray;
         }
+		
+		public function get_all_last_by_owner($owner, $limit=12){
+			$conn = get_mysql_conn();
+            $result = mysqli_query($conn, "SELECT * FROM logs WHERE owner='$owner' ORDER BY time DESC LIMIT $limit");
+            mysqli_close($conn);
+
+            while($array[] = mysqli_fetch_object($result));
+            return array_filter($array);
+		}
 
         public function add_log($title, $description, $level=1, $overrideOwner=null){
             $ip = $_SERVER["REMOTE_ADDR"];

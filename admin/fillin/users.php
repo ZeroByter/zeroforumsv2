@@ -35,6 +35,49 @@
 	}
 </style>
 
+<div class="modal fade" id="deleteAllPosts">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+				<h4 class="modal-title">Delete All Posts</h4>
+			</div>
+			<form id="deleteAllPostsForms">
+				<div class="modal-body">
+					<center><h4>Are you sure you want to delete all of this user's forum posts?</h4></center>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">Yes</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="setPostCount">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+				<h4 class="modal-title">Set post count</h4>
+			</div>
+			<form id="setPostCountForm">
+				<div class="modal-body">
+					<div class="form-group">
+						<label>New post count</label>
+						<input type="text" class="form-control" id="setPostCountInput" placeholder="New post count">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">Set Post Count</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
 <div class="modal fade" id="setDisplayName">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -188,6 +231,7 @@
 <table class="table table-hover table-stripped usersTable">
 	<thead>
 		<tr>
+			<th>I.D.</th>
 			<th>Username</th>
 			<th>Display name</th>
 			<th>Posts</th>
@@ -202,14 +246,15 @@
 				$isBanned = "users_list_row_banned";
 			}
 		?>
-		<tr data-id="<?php echo $value->id ?>" class="users_list_row <?php echo $isBanned ?>" data-username="<?php echo $value->username ?>" data-displayname="<?php echo $value->displayname ?>" data-banned="<?php echo ($confirmBan) ? "true" : "false"; ?>">
+		<tr data-id="<?php echo $value->id ?>" class="users_list_row <?php echo $isBanned ?>" data-banned="<?php echo ($confirmBan) ? "true" : "false"; ?>">
+			<td><?php echo $value->id ?></td>
 			<td>
-				<?php echo $value->username ?><br>
+				<?php echo filterXSS($value->username) ?><br>
 				<?php foreach(accounts::get_user_tags($value->id) as $value2){ ?>
 					<span class="label label-default"><?php echo usertags::get_by_id($value2)->name ?></span>
 				<?php } ?>
 			</td>
-			<td><?php echo $value->displayname ?></td>
+			<td><?php echo filterXSS($value->displayname) ?></td>
 			<td><?php echo $value->posts ?></td>
 			<td><?php echo timestamp_to_date($value->lastactive, true) ?></td>
 		</tr>
@@ -218,6 +263,10 @@
 </table>
 
 <script>
+	$(".users_list_row").each(function(i,v){
+		console.log()
+	})
+
 	//Search user in user list
 	$("#search_user_in").bind("change keyup", function(){
 		var searchTerm = $(this).val().toLowerCase()
@@ -225,7 +274,10 @@
 			$(".users_list_row").css("display", "table-row")
 		}else{
 			$(".users_list_row").each(function(i,v){
-				if($(v).data("username").toLowerCase().indexOf(searchTerm) > -1 || $(v).data("displayname").toLowerCase().indexOf(searchTerm) > -1){
+				var username = $($(v).children()[1]).html().split("<br>")[0].replace(/\t/g, "").replace(/\n/g, "").toLowerCase() //get the tr, find the second td, get it's html, split with br, get first split, replace all tabs and new lines with nothing, to lower case
+				var displayname = $($(v).children()[2]).html().split("<br>")[0].replace(/\t/g, "").replace(/\n/g, "").toLowerCase() //get the tr, find the third td, get it's html, split with br, get first split, replace all tabs and new lines with nothing, to lower case
+
+				if(username.indexOf(searchTerm) > -1 || displayname.indexOf(searchTerm) > -1){
 					$(v).css("display", "table-row")
 				}else{
 					$(v).css("display", "none")
@@ -249,6 +301,10 @@
 			$("#banUserBtn").css("display", "inline-block")
 			$("#unbanUserBtn").css("display", "none")
 		}
+	})
+
+	$("#viewProfile").click(function(){
+		window.open("/user/profile/" + selectedUser, "_blank")
 	})
 
 	//get manage usertags div
@@ -374,6 +430,52 @@
 			}
 		})
 
+		return false
+	})
+
+	$("#deleteAllPostsForms").submit(function(){
+		$.post("/admin/requests/deleteallposts.php", {userid: selectedUser}, function(html){
+			if(html == "success"){
+				getUsers()
+				$("#setPostCount").modal("toggle")
+				$("body").removeClass("modal-open")
+				$(".modal-backdrop").remove();
+            }else{
+                $.notify({
+                    message: html,
+                },{
+                    type: "danger",
+                    z_index: 103001,
+                    placement: {
+                		from: "bottom",
+                		align: "center"
+                	},
+                })
+			}
+		})
+		return false
+	})
+
+	$("#setPostCountForm").submit(function(){
+		$.post("/admin/requests/setpostcount.php", {userid: selectedUser, postcount: $("#setPostCountInput").val()}, function(html){
+			if(html == "success"){
+				getUsers()
+				$("#setPostCount").modal("toggle")
+				$("body").removeClass("modal-open")
+				$(".modal-backdrop").remove();
+            }else{
+                $.notify({
+                    message: html,
+                },{
+                    type: "danger",
+                    z_index: 103001,
+                    placement: {
+                		from: "bottom",
+                		align: "center"
+                	},
+                })
+			}
+		})
 		return false
 	})
 

@@ -19,6 +19,7 @@
             <ul class="nav navbar-nav navbar-links navbar-center">
                 <li><a href="/">Home</a></li>
                 <li><a href="/forums">Forums</a></li>
+                <li><a href="/about">About</a></li>
             </ul>
 
             <ul class="nav navbar-nav navbar-right">

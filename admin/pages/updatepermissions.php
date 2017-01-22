@@ -1,14 +1,3 @@
-<?php
-	include($_SERVER['DOCUMENT_ROOT'] . "/phpscripts/fillin/scripts.php");
-	start_session();
-	$currUsertags = [];
-	if(accounts::is_logged_in()){
-		$currAccount = accounts::get_current_account();
-		$currUsertags = accounts::get_current_usertags();
-	}
-	$usertag = usertags::get_by_id($_GET["id"]);
-?>
-
 <style>
 	.permissionBtn{
 		margin: 2px;
@@ -30,30 +19,42 @@
 	}
 </style>
 
-<div class="well">
-	<center>
-		Editing permissions for: <?php echo $usertag->name ?><br><br>
-		<button class="btn btn-success" id="selectAll">Select all</button>
-		<button class="btn btn-danger" id="denyAll">Deny all</button><br><br><br>
-		<?php
-			$permissions = usertags::getpermissions();
-			foreach($permissions as $key=>$value){
-				echo "<div class='permissionMainDiv'>";
-				echo "<button class='btn btn-primary' data-toggle='collapse' data-target='#permissionCollapse$key'>{$value[0]}</button>";
-				echo "<div class='collapse' id='permissionCollapse$key'><br>";
-				foreach($value as $key2=>$permission){
-					if($key2 != 0){
-						echo "<button class='btn permissionBtn' data-name='{$permission[0]}' data-desc='{$permission[1]}'>{$permission[1]}</button>";
-					}
-				}
-				echo "</div>";
-				echo "</div>";
-			}
-		?>
-	</center>
+<br>
+<br>
+<br>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8 col-lg-offset-2">
+            <a href="/admin/permissions"><button class="btn btn-info"><span class="glyphicon glyphicon-chevron-left"></span>  Go back</button></a>
+            <br><br><br>
+            <center>
+                Editing permissions for: <b><?php echo $usertag->name ?></b><br><br>
+        		<button class="btn btn-success" id="selectAll">Select all</button>
+        		<button class="btn btn-danger" id="denyAll">Deny all</button><br><br><br>
+        		<?php
+        			$permissions = usertags::getpermissions();
+        			foreach($permissions as $key=>$value){
+        				echo "<div class='permissionMainDiv'>";
+        				echo "<button class='btn btn-primary' data-toggle='collapse' data-target='#permissionCollapse$key'>{$value[0]}</button>";
+        				echo "<div class='collapse' id='permissionCollapse$key'><br>";
+        				foreach($value as $key2=>$permission){
+        					if($key2 != 0){
+        						echo "<button class='btn permissionBtn' data-name='{$permission[0]}' data-desc='{$permission[1]}'>{$permission[1]}</button>";
+        					}
+        				}
+        				echo "</div>";
+        				echo "</div>";
+        			}
+        		?>
+            </center>
+        </div>
+    </div>
 </div>
 
 <script>
+    var usertagID = "<?php echo $usertag->id ?>"
+    var redirectURL = "/admin/permissions"
+
 	var allPermissions = []
 	var permissions = JSON.parse("<?php echo addslashes($usertag->permissions) ?>")
 	$(".permissionBtn").each(function(i, v){
@@ -71,12 +72,9 @@
 	})
 
 	function updatePermissions(permissionUpdateName){
-		var postPermissions = permissions
-		if(postPermissions.length <= 0){
-			postPermissions = ""
-		}
+		var postPermissions = JSON.stringify(permissions)
 
-		$.post("/admin/requests/updatepermissions.php", {usertagid: selectedUsertag, permissions: postPermissions}, function(html){
+		$.post("/admin/requests/updatepermissions.php", {usertagid: usertagID, permissions: postPermissions}, function(html){
 			console.log(html)
 			if(html == "success"){
 				if($("[data-name='"+permissionUpdateName+"']").attr("data-state") == "true"){

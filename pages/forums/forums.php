@@ -11,6 +11,7 @@
                     <div class="col-xl-1">
                         <?php
                             foreach(forums::get_all_forums() as $value){
+								if(!usertags::can_tag_do($currUsertags, $value->canview)){ continue; }
                                 if($value){ echo "<h4>$value->title</h4><h5 class='text-muted'>$value->text</h5>" ?>
                                     <div class="subforum_main_div">
                                         <div class="container">

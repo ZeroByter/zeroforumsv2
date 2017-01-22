@@ -15,7 +15,7 @@
             <div class="panel panel-success">
                 <div class="panel-heading"><i class="icon fa fa-user"></i> Registered users</div>
                 <div class="panel-body">
-                    <h1><?php echo count(accounts::get_all())-1 ?></h1>
+                    <h1><?php echo count(accounts::get_all()) ?></h1>
                 </div>
             </div>
         </div>

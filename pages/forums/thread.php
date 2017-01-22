@@ -83,7 +83,7 @@
             <div class="col-xl-1 threadBody">
                 <div class="threadBodyInfo">
                     <?php if($value->deletestatus == 0 || $value->deletestatus == 2){ ?>
-                        <b><a href="/user/<?php echo $value->poster ?>"><?php echo accounts::get_display_name($value->poster) ?></a></b><br>
+                        <b><a href="/user/profile/<?php echo $value->poster ?>"><?php echo accounts::get_display_name($value->poster) ?></a></b><br>
                     <?php }if($value->deletestatus == 1){ ?>
                         <b><font color='red'>Reply deleted by original poster.</font></b>
                     <?php } ?>

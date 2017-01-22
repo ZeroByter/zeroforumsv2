@@ -39,6 +39,7 @@
 </div>
 <div id="usersActions">
 	<div class="btn-group">
+		<button type="button" class="btn btn-default" id="viewProfile" disabled>View profile</button>
 		<?php if(usertags::user_has_permission($currUsertags, "manageusertags", false)){ ?>
 			<button type="button" class="btn btn-default" disabled data-toggle="modal" data-target="#manageUsertagsModal">Manage usertags</button>
 		<?php }if(usertags::user_has_permission($currUsertags, "viewwarnings", false)){ ?>
@@ -53,10 +54,10 @@
 		<button type="button" class="btn btn-danger" disabled id="unbanUserBtn" style="display:none;" data-toggle="modal" data-target="#unBanUser">Unban user</button>
 		<?php }if(usertags::user_has_permission($currUsertags, "setdisplayname", false)){ ?>
 		<button type="button" class="btn btn-primary" disabled data-toggle="modal" data-target="#setDisplayName">Set display name</button>
-		<?php }if(usertags::user_has_permission($currUsertags, "setpostscount", false)){ ?>
-		<button type="button" class="btn btn-primary" disabled>Set posts count</button>
+		<?php }if(usertags::user_has_permission($currUsertags, "setpostcount", false)){ ?>
+		<button type="button" class="btn btn-primary" disabled data-toggle="modal" data-target="#setPostCount">Set posts count</button>
 		<?php }if(usertags::user_has_permission($currUsertags, "deleteallposts", false)){ ?>
-		<button type="button" class="btn btn-primary" disabled>Delete all posts</button>
+		<button type="button" class="btn btn-primary" disabled data-toggle="modal" data-target="#deleteAllPosts">Delete all posts</button>
 		<?php } ?>
 	</div>
 	<div class="input-group" style="margin-top:6px;width:400px;">

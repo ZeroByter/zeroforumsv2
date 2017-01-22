@@ -67,6 +67,8 @@
 </div>
 
 <script>
+	$('[data-toggle="tooltip"]').tooltip()
+	
 	$("#dbSettingsForm").submit(function(){
 		var postArray = {
 			ip: $("#mysqlIPAddress").val(),

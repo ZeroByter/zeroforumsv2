@@ -2,14 +2,14 @@
 	include($_SERVER['DOCUMENT_ROOT'] . "/phpscripts/fillin/scripts.php");
 
     start_session();
-	
+
 	if(isset($_POST["usertagid"]) && isset($_POST["permissions"])){
 		if(usertags::user_has_permission(accounts::get_current_usertags(), "updatepermissions")){
 			logs::add_log("usertags", "$1 updated permissions for [usertag:{$_POST["usertagid"]}]", 4);
-			if($_POST["permissions"] == ""){
-				usertags::edit_permissions($_POST["usertagid"], json_encode([]));
+			if($_POST["permissions"] == "" || $_POST["permissions"] == "[]"){
+				usertags::edit_permissions($_POST["usertagid"], "[]");
 			}else{
-				usertags::edit_permissions($_POST["usertagid"], json_encode($_POST["permissions"]));
+				usertags::edit_permissions($_POST["usertagid"], $_POST["permissions"]);
 			}
 			echo "success";
 		}else{

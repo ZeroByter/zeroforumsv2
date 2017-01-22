@@ -13,7 +13,7 @@
 <center>
 	<?php
 		if($user->id == accounts::get_current_account()->id){
-			echo "<h4 style='color:red;'>Careful! You are editting your own usertags! You might remove your own permissions!</h4><br><br><br>";
+			echo "<h4 style='color:red;'>Careful! You are editting your own usertags! You could accidently remove your own permissions to edit permissions!</h4><br><br><br>";
 		}
 	?>
 </center>
